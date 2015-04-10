@@ -1,0 +1,109 @@
+%Результаты сессии
+%Отношения(№,  фио), информация (№, оценка_1, оценка_2, оценка_3, оценка_4, ценка_5)
+% Запросы:
+%-	количество  неудовлетворительных оценок;
+%-	количество студентов без троек;
+%-	отличники(фио)
+
+
+
+GLOBAL FACTS
+%1
+determ countBadMarks(integer)
+%2
+determ countGoodStudent(integer)
+determ goodFlag(integer)
+%3
+determ studentId(integer)
+determ currentFlag(integer)
+
+PREDICATES
+nondeterm student(integer, string)	
+nondeterm information(integer, integer, integer, integer, integer, integer)
+%1
+determ incBadMarks(integer)
+determ badMarks(integer)
+
+%2
+determ goodStudents(integer)
+determ setGoodFlag(integer)
+determ setGoodFlag1(integer)
+determ incGoodStudent(integer)
+
+%3
+determ getMark(integer)
+determ incFlag(integer)
+determ showName(integer, integer)
+
+determ defaultFlag(integer)
+%%determ setGoodFlag12(integer)
+%determ incGoodStudent2(integer)
+
+start1 
+start2
+start3
+
+
+CLAUSES
+student(1, "111 B11").
+student(2, "222 OS2").
+student(3, "Bsssa DB").
+student(4, "Bsssa OS").
+student(5, "Bsssa5 DB5").
+information(1, 5, 5, 5, 5, 5).
+information(2, 5, 5, 5, 5, 5).
+information(3, 5, 5, 5, 5, 5).
+information(4, 2, 2, 4, 5, 6).
+information(5, 5, 5, 5, 5, 5).
+
+%%%%%%%%%%
+start1:-
+	assert(countBadMarks(0)), student(Id, _),  badMarks(Id), fail; 
+	retract(countBadMarks(N)), write("Count Bad marks: ", N), nl.
+
+badMarks(Id):-
+	information(Id, X, _, _, _, _), incBadMarks(X); 
+	information(Id, _, X, _, _, _), incBadMarks(X); 
+	information(Id, _, _, X, _, _), incBadMarks(X); 
+	information(Id, _, _, _, X, _), incBadMarks(X); 
+	information(Id, _, _, _, _, X), incBadMarks(X); true.
+
+incBadMarks(Mark):-Mark<3, retract(countBadMarks(X)), Y=X+1, assert(countBadMarks(Y)).
+	
+%%%%%%%%%
+
+start2:-
+	assert(countGoodStudent(0)), assert(goodFlag(0)), student(Id, _),  goodStudents(Id), fail;
+	retract(countGoodStudent(N)), write("Count good students: ", N), nl.
+
+
+goodStudents(Id):-
+	information(Id, X, _, _, _, _), setGoodFlag(X);
+	information(Id, _, X, _, _, _), setGoodFlag(X);
+	information(Id, _, _, X, _, _), setGoodFlag(X);
+	information(Id, _, _, _, X, _), setGoodFlag(X);
+	information(Id, _, _, _, _, X), setGoodFlag(X), incGoodStudent(5); true.
+
+setGoodFlag(Mark):-Mark>3, retract(goodFlag(F)), F1=F+1, assert(goodFlag(F1)).
+incGoodStudent(Step):-retract(goodFlag(Z)), assert(goodFlag(0)), setGoodFlag1(Z).
+setGoodFlag1(Z1):-Z1=5, retract(countGoodStudent(X)), Y=X+1, assert(countGoodStudent(Y)).
+
+%%%%%%%	
+start3:-
+	assert(currentFlag(0)), student(Id, _), getMark(Id), fail.
+	
+getMark(Id):-
+	information(Id, X, _, _, _, _), incFlag(X);
+	information(Id, _, X, _, _, _), incFlag(X);
+	information(Id, _, _, X, _, _), incFlag(X);
+	information(Id, _, _, _, X, _), incFlag(X);
+	information(Id, _, _, _, _, X), incFlag(X), defaultFlag(Id); true.
+
+incFlag(Mark):-Mark>=5, retract(currentFlag(Flag)), F1=Flag+1, assert(currentFlag(F1)).
+
+defaultFlag(Id):-retract(currentFlag(Z)), assert(currentFlag(0)), showName(Id, Z).
+showName(Id, Flag):-Flag=5, student(Id, N), write("Exelent student: ", N), nl.
+showName(Id, Flag):-Flag<5, retract(currentFlag(Flag)), F1=0, assert(currentFlag(F1)).
+
+GOAL
+start1, start2, start3.

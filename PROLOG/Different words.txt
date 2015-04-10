@@ -1,0 +1,74 @@
+%Слова  разделить  на два списка по следующему критерию: в первый список попадают слова, имеющие одинаковое количество гласных и согласных, во второй – остальные слова.
+
+GLOBAL FACTS
+determ countVowel(integer)
+determ countConsonant(integer)
+determ word(string)
+
+DOMAINS
+stringlist=string*
+file=file_in; file_vowel; file_consonant.
+
+PREDICATES
+nondeterm create_list(stringlist)
+nondeterm selectWord(stringlist)
+
+nondeterm countVowelInWord(string, integer)
+nondeterm countConsonantInWord(string, integer)
+
+nondeterm outputVowel(string)
+nondeterm outputConsonantVowel(string)
+
+vowel(char)
+consonant(char)
+nondeterm start1
+
+CLAUSES
+vowel('a').vowel('e').vowel('i').vowel('o').vowel('u').
+vowel('A').vowel('E').vowel('I').vowel('O').vowel('U').
+consonant('b').consonant('c').consonant('d').consonant('f').consonant('g').
+consonant('h').consonant('j').consonant('k').consonant('l').consonant('m').
+consonant('n').consonant('p').consonant('q').consonant('r').consonant('s').
+consonant('t').consonant('v').consonant('w').consonant('x').consonant('y').
+consonant('z').consonant('Z').
+consonant('B').consonant('C').consonant('D').consonant('F').consonant('G').
+consonant('H').consonant('J').consonant('K').consonant('L').consonant('M').
+consonant('N').consonant('P').consonant('Q').consonant('R').consonant('S').
+consonant('T').consonant('V').consonant('W').consonant('X').consonant('Y').
+
+  start1:-openread(file_in, "C:\\words.txt"), readdevice(file_in), openwrite(file_vowel,"C:\\vowel.txt"), 
+  openwrite(file_consonant,"C:\\consonant.txt"), create_list(List), nl, assert(countVowel(0)), assert(word("")), 
+  assert(countConsonant(0)), readdevice(keyboard), closefile(file_in), selectWord(List), closefile(file_vowel),
+  closefile(file_consonant). %show_list(List).
+   
+   %%%
+  create_list([X|List]):- not(eof(file_in)), readln(X), create_list(List).
+  create_list([]).
+  %%
+  
+  %%%
+  selectWord([X|List]):- retract(word(_)), assert(word(X)), countVowelInWord(X, 0), countConsonantInWord(X, 0), 
+  selectWord(List). 
+  selectWord([]).
+  %%%
+  
+  %%%
+  countVowelInWord("", Count):-retract(countVowel(_)), assert(countVowel(Count)).
+  countVowelInWord(X, Count):-frontchar(X,Ch,T), vowel(Ch), Count1=Count+1, countVowelInWord(T, Count1).
+  countVowelInWord(X, Count):-frontchar(X,_,T), countVowelInWord(T, Count).
+  %%%
+  
+  %%%
+  countConsonantInWord("", Count):-retract(countVowel(X)), assert(countVowel(X)), X=Count, 
+  retract(word(Y)), assert(word(Y)), outputVowel(Y);
+  retract(word(Y)), assert(word(Y)), outputConsonantVowel(Y).
+  
+  countConsonantInWord(X, Count):-frontchar(X,Ch,T), consonant(Ch), Count1=Count+1, countConsonantInWord(T, Count1).
+  countConsonantInWord(X, Count):-frontchar(X,_,T), countConsonantInWord(T, Count).
+  %%%
+  
+  outputVowel(S):-writedevice(file_vowel), write(S), nl, writedevice(screen), !.
+  outputConsonantVowel(S):-writedevice(file_consonant), write(S), nl, writedevice(screen), !.
+  
+ GOAL
+ start1.
